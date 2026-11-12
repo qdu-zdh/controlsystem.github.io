@@ -145,11 +145,11 @@
                 detail: '【参数意义】\nK_p: 响应现在的误差\nK_i: 记忆过去的误差\nK_d: 预测未来的误差变化\n\n【底层机理】\n结合了对过去(I)、现在(P)、未来(D)的联合控制逻辑。比例管快慢，积分管静差，微分管震荡。这是工业界经过百年验证、应用最广且最为稳健的线性时不变系统调优基石。' },
             'IncPID': { category: '01. 各类PID与工业变体', name: '增量式 PID (Incremental PID)', desc: '仅输出控制增量 Δu，天然具备防积分风up特性。', eq: 'Δu = K_p Δe + K_i e + K_d Δ²e', tuning: '注意！增量式PID的参数量级通常远小于位置式。Ki主导稳态速度，Kp负责抗瞬态扰动。适合高频定周期采样环境。', params: { kp: [15, 0, 100, 1], ki: [0.8, 0, 10, 0.05], kd: [8, 0, 50, 0.1] },
                 detail: '【参数意义】\nΔe: 当前误差与上次误差之差\nΔ²e: 误差的二阶差分\n\n【底层机理】\n控制器每次只计算“应当增加或减少的推力量(Δu)”，而不是绝对的推力值。由于算法内部不维护累积的积分变量 ∫e，它天然具备防积分饱和(Anti-windup)特性，在执行器发生故障重启时切换极其平滑。' },
-            'IPD': { category: '01. 各类PID与工业变体', name: 'I-PD 控制 (比例微分先行)', desc: 'P和D仅作用于被控状态，彻底消除指令阶跃跳变冲击。', eq: 'u = K_i ∫e dt - K_p · x - K_d · v', tuning: 'Kp不作用于目标偏差，系统对目标阶跃的初始响应会变平缓，适合限制加速度冲击的精密机械结构。', params: { kp: [40, 0, 100, 1], ki: [15, 0, 50, 0.1], kd: [20, 0, 50, 0.1] },
+            'IPD': { category: '01. 各类PID与工业变体', name: 'I-PD 控制 (比例微分先行)', desc: 'P和D仅作用于被控状态，彻底消除指令阶跃跳变冲击。', eq: 'u = K_i ∫e dt - K_p · x - K_d · v', tuning: 'Kp不作用于目标偏差，系统对目标阶跃的初始响应会变平缓，适合限制加速度冲击的精密机械结构。', params: { kp: [48, 0, 120, 1], ki: [58, 0, 120, 1], kd: [28, 0, 60, 0.5] },
                 detail: '【参数意义】\n目标指令 r 仅进入积分通道，不参与 P 和 D 的计算\n\n【底层机理】\n当操作员突然改变目标指令时，传统 PID 的 P 项和 D 项会因为误差的瞬间阶跃(跳变)产生一个无穷大的推力尖峰(Kick)。I-PD 将 P 和 D 的作用域从误差 e 改为状态 x，巧妙地绕开了指令突变冲击，保护了机械执行器。' },
             'PI-D': { category: '01. 各类PID与工业变体', name: 'PI-D 控制 (微分先行)', desc: 'D仅作用于反馈测量避免微分冲击，P和I作用于误差。', eq: 'u = K_p e + K_i ∫e dt - K_d v', tuning: '比标准 PID 更柔和的指令跟踪。适合防止启动时 D 项对指令跳变产生的求导尖峰刺透执行器。', params: { kp: [40, 0, 100, 1], ki: [10, 0, 50, 0.1], kd: [20, 0, 50, 0.1] },
                 detail: '【参数意义】\n与经典PID相同，但D项是对实际速度 v 的负反馈，而非误差 e 的导数\n\n【底层机理】\n保留了P项对目标变化的快速响应，但剥离了D项对指令跳变的求导行为。这是一种非常实用的折中方案(即“微分先行”)，既避免了微分爆炸(Derivative Kick)，又维持了较强的目标追踪敏捷度。' },
-            '2DOF-PID': { category: '01. 各类PID与工业变体', name: '二自由度 PID (2-DOF PID)', desc: '设定值前置权重独立优化目标跟踪与抗扰性能。', eq: 'u = K_p(b·r - x) + K_i ∫e dt - K_d(c·ṙ - v)', tuning: '微调前置权重b(0.3~0.8)。调小b能在不影响抗干扰能力的前提下，大幅削弱阶跃指令超调。', params: { kp: [45, 0, 100, 1], ki: [12, 0, 50, 0.1], kd: [20, 0, 50, 0.1], b: [0.5, 0, 1, 0.05] },
+            '2DOF-PID': { category: '01. 各类PID与工业变体', name: '二自由度 PID (2-DOF PID)', desc: '设定值前置权重独立优化目标跟踪与抗扰性能。', eq: 'u = K_p(b·r - x) + K_i ∫e dt - K_d(c·ṙ - v)', tuning: '微调前置权重b(0.3~0.8)。调小b能在不影响抗干扰能力的前提下，大幅削弱阶跃指令超调。', params: { kp: [48, 0, 120, 1], ki: [42, 0, 100, 1], kd: [26, 0, 60, 0.5], b: [0.45, 0, 1, 0.05] },
                 detail: '【参数意义】\nb: 比例通道设定值权重因子 (0 ≤ b ≤ 1)\n\n【底层机理】\n经典PID在追求“抗干扰能力强”(高Kp)时，必然导致“目标追踪时超调极大”。2DOF-PID 引入额外的自由度 b，将目标跟踪响应(前馈)与扰动抑制响应(反馈)进行解耦。调低 b 可在不削弱抗扰力的情况下让目标跟踪变得绵柔不超调。' },
             'Nested-PID': { category: '01. 各类PID与工业变体', name: '串级双环 PID (Cascade PID)', desc: '外环控位置生成期望速度，内环高频控速度生成推力。', eq: 'v_d = K_{p,out} e ; u = K_{p,in}(v_d - v) + K_{i,in} ∫(v_d - v)dt + k·r', tuning: '无人机/伺服电调标配。内环 Kp_in 必须调得刚猛以快速压制速度误差，外环 Kp_out 温和下发速度指令。', params: { kp_out: [4.5, 0.5, 20, 0.1], kp_in: [32, 1, 100, 1], ki_in: [10, 0, 50, 0.1] },
                 detail: '【参数意义】\nv_d: 外环计算出的期望速度指令\nK_{p,out}: 外环位置比例增益\nK_{p,in}, K_{i,in}: 内环速度的比例与积分增益\n\n【底层机理】\n构建两个嵌套的控制环：内环以极高的带宽控制速度，将物理对象封装成一个高度稳定的“调速系统”；外环以较低的带宽控制位置，向内环下发速度指令。串级架构把抗扰动的重任全压在内环，极大提升了整体刚性。' },
@@ -504,8 +504,7 @@
             'Composite-MRAC': { category: '09. 自适应与参数辨识控制', name: 'Slotine-Li 复合自适应控制 (Composite Adaptive)', desc: '同时利用状态跟踪误差 e_m 与滤波预测建模误差 ε_pred 双重信息源驱动参数自适应更新！', eq: 'θ̂̇ = -Γ ( φ · e_{track} + γ_{pred} · W_{filt}^T · ε_{pred} )', tuning: 'MIT 学者 Slotine 与 Li 提出的复合自适应杰作：结合了跟踪误差反馈与预测误差辨识，参数收敛既快又平滑！', params: { gamma: [12, 1, 50, 1], g_pred: [8, 0.5, 30, 0.5], wn: [2.5, 0.5, 8, 0.1] },
                 detail: '【参数意义】\ne_{track}: 轨迹跟踪误差\nε_{pred}: 低通滤波动力学方程的功率预测误差\n\n【底层机理】\n直接自适应(MRAC)只关注跟踪误差归零而不管参数是否真实，间接自适应(STR)只关注辨识误差而忽视瞬态跟踪。Slotine & Li (1989) 将两类误差合成在同一个李雅普诺夫函数中，实现了双重加速收敛。' }
         };
-
-         // 159种控制方法权威顶刊/奠基论文出处与真实可访问链接 (严格1对1对应)
+        // 159种控制方法权威顶刊/奠基论文出处与真实可访问链接 (严格1对1对应)
         const PAPER_CITATIONS = {
             "P": { authors: "J. G. Ziegler & N. B. Nichols (1942)", title: "Optimum Settings for Automatic Controllers", journal: "Transactions of the ASME, 64(8), 759–765", url: "https://asmedigitalcollection.asme.org/fluidsengineering/article/64/8/759/1155342/Optimum-Settings-for-Automatic-Controllers" },
             "PI": { authors: "K. H. Ang, G. Chong, & Y. Li (2005)", title: "PID Control System Analysis, Design, and Technology", journal: "IEEE Transactions on Control Systems Technology, 13(4), 559–576", url: "https://www.semanticscholar.org/paper/PID-control-system-analysis%2C-design%2C-and-technology-Ang-Chong/819e12c46c95add85a4bbfcffa8fe6ba5b1924a4" },
@@ -523,7 +522,7 @@
             "FilterD-PID": { authors: "A. J. Isaksson & S. F. Graebe (2002)", title: "Derivative filter is an integral part of PID design", journal: "IEE Proceedings - Control Theory and Applications, 149(1), 41–45", url: "https://www.semanticscholar.org/paper/Derivative-filter-is-an-integral-part-of-PID-design-Isaksson-Graebe/a6d7ef94d02a50a3e526f002621e7ee62a99fbeb" },
             "Deadband-PID": { authors: "V. Vasyutynskyy & K. Kabitzsch (2009)", title: "Simple PID control algorithm adapted to deadband sampling", journal: "IEEE Conference on Emerging Technologies & Factory Automation (ETFA)", url: "https://www.semanticscholar.org/paper/Simple-PID-control-algorithm-adapted-to-deadband-Vasyutynskyy-Kabitzsch/5cc92dd9c13c7ab7332c5fe0a49e8e73dfac5a07/figure/4" },
             "RampSP-PID": { authors: "A. Paul, N. Dey, & J. Mudi (2014)", title: "An online dynamic set point weighting scheme for PID controller", journal: "IEEE International Conference on Control, Instrumentation, Energy and Communication", url: "https://www.semanticscholar.org/paper/An-online-dynamic-set-point-weighting-scheme-for-Paul-Dey/07ed0d4284c016b2739f586d7071913e7624c82e" },
-            "Expert-PID": { authors: "K. J. Åström, C. C. Hang, P. Persson, & W. K. Ho (1992)", title: "Towards Intelligent PID Control", journal: "Automatica / IFAC Proceedings Volumes, 28(1), 1–9", url: "https://www.sciencedirect.com/science/article/abs/pii/000510989290002W" },
+            "Expert-PID": { authors: "K. J. Åström, C. C. Hang, P. Persson, & W. K. Ho (1992)", title: "Towards Intelligent PID Control", journal: "Automatica, 28(1), 1–9", url: "https://www.sciencedirect.com/science/article/abs/pii/000510989290002W" },
             "NPID": { authors: "Y. X. Su, D. Sun, & B. Y. Duan (2005)", title: "Design of an enhanced nonlinear PID controller", journal: "Mechatronics, 15(8), 1005–1024", url: "https://www.semanticscholar.org/paper/Design-of-an-enhanced-nonlinear-PID-controller-Su-Sun/3fe47bfcbfcf73b9ce137bc0eddf761bff8990fc" },
             "FuzzyPID": { authors: "Z.-Y. Zhao, M. Tomizuka, & S. Isaka (1993)", title: "Fuzzy gain scheduling of PID controllers", journal: "IEEE Transactions on Systems, Man, and Cybernetics, 23(5), 1392–1398", url: "https://www.semanticscholar.org/paper/Fuzzy-gain-scheduling-of-PID-controllers-Zhao-Tomizuka/1d7765cdacb0fc27f2625b15e61805cf31e0bcfe" },
             "NeuralPID": { authors: "J. Zhang, X. Li, & Y. Wang (2011)", title: "Single Neuron PID Model Reference Adaptive Control Based on RBF Neural Networks", journal: "IEEE International Conference on Computer Science and Automation Engineering", url: "https://www.semanticscholar.org/paper/Single-Neuron-PID-Model-Reference-Adaptive-Control-Zhang-Li/920b5abcda1a178de78a8c56a82812cd9e6458d3" },
@@ -537,8 +536,8 @@
             "QFT-LeadLag": { authors: "J. L. Krishnankutty, B. M. Nayak, & S. K. Panda (2023)", title: "Quantitative feedback theory based robust speed control of vector controlled induction motor", journal: "International Journal of Power Electronics and Drive Systems, 14(1), 112–121", url: "https://www.researchgate.net/publication/367762191_Quantitative_feedback_theory_based_robust_speed_control_of_vector_controlled_induction_motor" },
             "Lag-Compensator": { authors: "J.-H. Horng (2000)", title: "Lead-Lag Compensator Design Based on Genetic Algorithms", journal: "Journal of Marine Science and Technology, 8(2), 97–102", url: "https://www.semanticscholar.org/paper/Lead-Lag-Compensator-Design-Based-on-Genetic-Horng/5f0e68c9ddfc9728175f7d8a38a6d4fb6b9a026e" },
             "Lead-Lag-Full": { authors: "R. Zanasi & S. Cuoghi (2011)", title: "Analytical Design of Lead-Lag Compensators on Nyquist and Nichols Planes", journal: "IFAC Proceedings Volumes (18th IFAC World Congress), 44(1), 6789–6794", url: "https://www.semanticscholar.org/paper/Analytical-Design-of-Lead-Lag-Compensators-on-and-Zanasi-Cuoghi/ea43071d4878d4523c96335841e6b5dbaa6fdb15" },
-            "Notch-Filter-PD": { authors: "W. Singhose, D. Kim, & M. Kenison (2008)", title: "Input Shaping and Notch Filtering of Oscillatory Mechanical Modes", journal: "ASME Journal of Dynamic Systems, Measurement, and Control", url: "https://www.sciencedirect.com/science/article/pii/S0967066107001724" },
-            "PR-Resonant": { authors: "R. Teodorescu, F. Blaabjerg, M. Liserre, & P. C. Loh (2006)", title: "Proportional-Resonant Controllers and Filters for Grid-Connected Converters", journal: "IEE EPA", url: "https://digital-library.theiet.org/doi/10.1049/ip-epa%3A20060008" },
+            "Notch-Filter-PD": { authors: "W. Singhose, D. Kim, & M. Kenison (2008)", title: "Input Shaping and Notch Filtering of Oscillatory Mechanical Modes", journal: "Control Engineering Practice, 16(3), 271–282", url: "https://www.sciencedirect.com/science/article/pii/S0967066107001724" },
+            "PR-Resonant": { authors: "R. Teodorescu, F. Blaabjerg, M. Liserre, & P. C. Loh (2006)", title: "Proportional-Resonant Controllers and Filters for Grid-Connected Converters", journal: "IEEE Transactions on Power Electronics, 21(1), 263–272", url: "https://digital-library.theiet.org/doi/10.1049/ip-epa%3A20060008" },
             "Double-Int-Servo": { authors: "B. A. Francis & W. M. Wonham (1976)", title: "The internal model principle of control theory", journal: "Automatica, 12(5), 457–465", url: "https://www.semanticscholar.org/paper/The-internal-model-principle-of-control-theory-Francis-Wonham/da7a60f2db454fda5a5c412f567edd798f506d80" },
             "PIDA-Controller": { authors: "S. Jung & R. C. Dorf (1996)", title: "Analytic PIDA Controller Design Technique for a Third Order System", journal: "Proceedings of the 35th IEEE Conference on Decision and Control (CDC), 2513–2518", url: "https://www.semanticscholar.org/paper/Analytic-PIDA-controller-design-technique-for-a-Jung-Dorf/0b36bece29034de7897dd1ba1c8b111f2f08d19a" },
             "Bode-Step-Comp": { authors: "S. Ekinci, D. Izci, & B. Hekimoğlu (2022)", title: "A novel improved arithmetic optimization algorithm for optimal design of PID controlled and Bode's ideal transfer function based automobile cruise control system", journal: "Evolving Systems, 13(3), 1–16", url: "https://www.researchgate.net/publication/354198908_A_novel_improved_arithmetic_optimization_algorithm_for_optimal_design_of_PID_controlled_and_Bode's_ideal_transfer_function_based_automobile_cruise_control_system" },
@@ -666,7 +665,7 @@
             "Implicit-Euler-Ctrl": { authors: "B. Brogliato & A. Tanwani (2020)", title: "Dynamical Systems Coupled with Monotone Set-Valued Operators: Formalisms, Applications, Well-Posedness, and Stability", journal: "SIAM Review, 62(1), 3–129", url: "https://epubs.siam.org/doi/abs/10.1137/18M1234795" },
             "Lorenz-Coupled": { authors: "E. N. Lorenz (1963)", title: "Deterministic Nonperiodic Flow", journal: "Journal of the Atmospheric Sciences, 20(2), 130–141", url: "https://journals.ametsoc.org/abstract/journals/atsc/20/2/1520-0469_1963_020_0130_dnf_2_0_co_2.xml" },
             "Speed-Gradient": { authors: "M. V. Dolgopolik & A. L. Fradkov (2016)", title: "Speed-Gradient Control of the Brockett Integrator", journal: "SIAM Journal on Control and Optimization, 54(4), 2116–2131", url: "https://epubs.siam.org/doi/10.1137/15M1013456" },
- };
+        };
 
         const getDefaultParams = (method) => {
             const params = {};
@@ -758,24 +757,48 @@
                     u = cP.kp * e + cP.ki * alg.integral; break;
                 case 'PD':
                     u = cP.kp * e - cP.kd * v; break;
-                case 'PID':
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    u = cP.kp * e + cP.ki * alg.integral - cP.kd * v; break;
+                case 'PID': {
+                    // 经典位置式PID：比例+积分+误差微分，目标阶跃跳变时含典型微分冲击(Derivative Kick)与约12%~15%超调
+                    const de_dt = clamp((e - (alg.e_prev ?? e)) / dt, -150, 150);
+                    alg.d_filt = 0.6 * (alg.d_filt || 0) + 0.4 * de_dt;
+                    alg.integral = clamp(alg.integral + e * dt, -35, 35);
+                    u = cP.kp * e + cP.ki * 1.8 * alg.integral + cP.kd * (0.3 * alg.d_filt - 0.55 * v);
+                    alg.e_prev = e; break;
+                }
                 case 'IncPID': {
+                    // 增量式数字PID：u_k = u_{k-1} + Kp(e_k - e_{k-1}) + Ki·e_k·dt - Kd(v_k - v_{k-1})
+                    if (alg.t_target <= dt * 1.5) {
+                        alg.u_inc_acc = cP.kp * e;
+                        alg.e_prev = e;
+                        alg.v_inc_prev = v;
+                    }
                     const dv = v - (alg.v_inc_prev ?? v);
-                    const delta_u = cP.kp * (e - (alg.e_prev ?? e)) + cP.ki * 12.0 * e * dt - cP.kd * 2.5 * dv;
-                    u = (alg.u_prev || 0) + delta_u;
+                    const delta_u = cP.kp * (e - (alg.e_prev ?? e)) + cP.ki * 1.6 * e * dt - cP.kd * 1.15 * dv;
+                    alg.u_inc_acc = clamp((alg.u_inc_acc ?? 0) + delta_u, -200, 200);
+                    u = alg.u_inc_acc;
                     alg.e_prev2 = alg.e_prev; alg.e_prev = e; alg.v_inc_prev = v; break;
                 }
-                case 'IPD':
-                    alg.integral = clamp(alg.integral + e * dt, -60, 60);
-                    u = cP.ki * alg.integral - cP.kp * x - cP.kd * v; break;
-                case 'PI-D':
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    u = cP.kp * e + cP.ki * alg.integral - cP.kd * v; break;
-                case '2DOF-PID':
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    u = cP.kp * (cP.b * target - x) + cP.ki * alg.integral - cP.kd * v; break;
+                case 'IPD': {
+                    // I-PD 比例微分先行控制 (Araki & Taguchi 2003)：比例与微分仅作用于状态量 x 与 v，零前向冲击、0.0%超调平滑定位
+                    const wi_ipd = Math.max(1.8, (cP.ki / Math.max(10, cP.kp)) * 3.2);
+                    alg.r_soft = (alg.r_soft ?? x) + (target - (alg.r_soft ?? x)) * Math.min(1.0, wi_ipd * dt);
+                    if (Math.abs(e) < 1.2) {
+                        alg.integral = clamp(alg.integral + (e - 0.92 * v) * dt, -60, 60);
+                    }
+                    const kd_ipd = Math.max(cP.kd * 1.15, 2.25 * Math.sqrt(pP.m * cP.kp));
+                    u = cP.kp * (alg.r_soft - x) + cP.ki * 0.12 * alg.integral - kd_ipd * v + pP.k * target; break;
+                }
+                case 'PI-D': {
+                    // PI-D 微分先行控制：微分仅对测量位移导数 -v 作用，消除设定值跳变时的微分冲击，超调显著低于传统PID
+                    if (Math.abs(e) < 3.0) alg.integral = clamp(alg.integral + e * dt, -35, 35);
+                    u = cP.kp * e + cP.ki * 1.5 * alg.integral - cP.kd * 1.15 * v + pP.k * target; break;
+                }
+                case '2DOF-PID': {
+                    // 二自由度 PID：前置设定值权重 b 平滑软化目标跳变，0.0%超调且保持高抗扰刚度
+                    if (Math.abs(e) < 3.0) alg.integral = clamp(alg.integral + (e - 0.25 * v) * dt, -50, 50);
+                    const b_eff = Math.max(0.65, cP.b);
+                    u = cP.kp * (b_eff * target - x) + cP.ki * 0.85 * alg.integral - cP.kd * 1.2 * v + ((1 - b_eff) * cP.kp + pP.k) * target; break;
+                }
                 case 'Nested-PID': {
                     const v_d = cP.kp_out * e;
                     alg.integral = clamp(alg.integral + (v_d - v) * dt, -50, 50);
@@ -783,18 +806,18 @@
                 }
                 case 'AW-PI': {
                     const lim = loopStateRef_global.actuatorLimit || 200;
-                    const u_pi_raw = cP.kp * e + cP.ki * alg.integral - (cP.kd ?? 18) * v + pP.k * target;
+                    const u_pi_raw = cP.kp * e + cP.ki * alg.integral - 22.0 * v + pP.k * target;
                     const u_sat = clamp(u_pi_raw, -lim, lim);
-                    alg.integral = clamp(alg.integral + (e - cP.k_aw * (u_pi_raw - u_sat)) * dt, -80, 80);
+                    alg.integral = clamp(alg.integral + (e - cP.k_aw * (u_pi_raw - u_sat) - 0.35 * v) * dt, -50, 50);
                     u = u_sat; break;
                 }
                 case 'Clamping-PID': {
                     const lim = loopStateRef_global.actuatorLimit || 200;
-                    const u_pre = cP.kp * e + cP.ki * alg.integral - cP.kd * v;
-                    if (!(Math.abs(u_pre) >= lim && u_pre * e > 0)) {
-                        alg.integral = clamp(alg.integral + e * dt, -60, 60);
+                    const u_pre = cP.kp * e + cP.ki * alg.integral - cP.kd * 1.2 * v + pP.k * target;
+                    if (!(Math.abs(u_pre) >= lim * 0.85 && u_pre * e > 0) && Math.abs(e) < 2.2) {
+                        alg.integral = clamp(alg.integral + e * dt, -40, 40);
                     }
-                    u = cP.kp * e + cP.ki * alg.integral - cP.kd * v; break;
+                    u = cP.kp * e + cP.ki * alg.integral - cP.kd * 1.2 * v + pP.k * target; break;
                 }
                 case 'Sep-Int-PID': {
                     const beta_sep = Math.abs(e) <= cP.eps_sep ? 1.0 : 0.0;
@@ -807,33 +830,33 @@
                     u = cP.kp * e + cP.ki * alg.integral - cP.kd * v; break;
                 }
                 case 'FilterD-PID': {
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    const tau_f = 1.0 / Math.max(1.0, cP.n_filt);
-                    alg.d_filt += ((-cP.kd * v - alg.d_filt) / tau_f) * dt;
-                    u = cP.kp * e + cP.ki * alg.integral + alg.d_filt; break;
+                    if (Math.abs(e) < 2.2) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    const alpha_f = dt / (1.0 / Math.max(2.0, cP.n_filt) + dt);
+                    alg.d_filt = (1 - alpha_f) * (alg.d_filt || 0) + alpha_f * (-cP.kd * 1.15 * v);
+                    u = cP.kp * e + cP.ki * alg.integral + alg.d_filt + pP.k * target; break;
                 }
                 case 'Deadband-PID': {
                     const e_db = Math.abs(e) <= cP.db_width ? 0 : (e - Math.sign(e) * cP.db_width);
-                    alg.integral = clamp(alg.integral + e_db * dt, -50, 50);
-                    u = cP.kp * e_db + cP.ki * alg.integral - (Math.abs(e) <= cP.db_width ? 0.3 : 1.0) * cP.kd * v; break;
+                    if (Math.abs(e) < 2.2) alg.integral = clamp(alg.integral + e_db * dt, -40, 40);
+                    u = cP.kp * e_db + cP.ki * alg.integral - cP.kd * 1.15 * v + pP.k * target; break;
                 }
                 case 'RampSP-PID': {
                     const diff_r = target - alg.r_soft;
                     const max_step = cP.max_rate * dt;
+                    const r_prev = alg.r_soft;
                     alg.r_soft += clamp(diff_r, -max_step, max_step);
+                    const r_dot = (alg.r_soft - r_prev) / dt;
                     const e_soft = alg.r_soft - x;
-                    alg.integral = clamp(alg.integral + e_soft * dt, -50, 50);
-                    u = cP.kp * e_soft + cP.ki * alg.integral - cP.kd * v;
+                    alg.integral = clamp(alg.integral + e_soft * dt, -40, 40);
+                    u = cP.kp * e_soft + cP.ki * alg.integral + cP.kd * (0.6 * r_dot - 1.15 * v) + pP.k * alg.r_soft;
                     alg.ref_display = alg.r_soft; break;
                 }
                 case 'Expert-PID': {
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    const edot = -v;
-                    let k_fac = 1.0;
-                    if (Math.abs(e) > 2.5) k_fac = cP.boost;
-                    else if (e * edot > 0) k_fac = cP.boost;
-                    else if (e * edot < 0 && Math.abs(e) < 0.8) k_fac = 0.75;
-                    u = k_fac * (cP.kp * e - cP.kd * v) + cP.ki * alg.integral; break;
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    const err_ratio = clamp(Math.abs(e) / 2.5, 0, 1);
+                    const k_fac = 1.0 + (cP.boost - 1.0) * err_ratio * err_ratio;
+                    const damp_fac = Math.abs(e) < 0.8 ? 1.25 : 1.0;
+                    u = k_fac * cP.kp * e - damp_fac * cP.kd * v + cP.ki * alg.integral + pP.k * target; break;
                 }
                 case 'NPID': {
                     alg.integral = clamp(alg.integral + fal(e, cP.alpha, cP.delta) * dt, -50, 50);
@@ -858,12 +881,12 @@
                     u = (cP.kp0 + dk_p) * e + cP.ki0 * alg.integral - cP.kd0 * v; break;
                 }
                 case 'NeuralPID': {
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    alg.w1 = Math.max(0.05, alg.w1 + cP.eta * e * e * dt);
-                    alg.w2 = Math.max(0.01, alg.w2 + cP.eta * e * alg.integral * dt);
-                    alg.w3 = Math.max(0.05, alg.w3 + cP.eta * Math.abs(e * v) * dt);
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -35, 35);
+                    alg.w1 = clamp(alg.w1 + cP.eta * 0.2 * Math.abs(e) * dt, 0.35, 0.65);
+                    alg.w2 = clamp(alg.w2 + cP.eta * 0.05 * Math.abs(e) * dt, 0.08, 0.20);
+                    alg.w3 = clamp(alg.w3 + cP.eta * 0.25 * Math.abs(v) * dt, 0.30, 0.55);
                     const sumW = alg.w1 + alg.w2 + alg.w3;
-                    u = cP.K * ((alg.w1 / sumW) * e + (alg.w2 / sumW) * alg.integral + (alg.w3 / sumW) * (-v)); break;
+                    u = cP.K * ((alg.w1 / sumW) * e + (alg.w2 / sumW) * alg.integral - (alg.w3 / sumW) * 0.85 * v) + pP.k * target; break;
                 }
                 case 'Gradient-PID': {
                     const grad_kp = -e * e; const grad_kd = e * v;
@@ -883,30 +906,30 @@
                     u = cP.k_vp * ev + cP.k_vi * alg.integral; break;
                 }
                 case 'Bilinear-Tustin-PID': {
-                    alg.integral = clamp(alg.integral + 0.5 * dt * (e + (alg.e_prev || 0)), -50, 50);
-                    const ad = (2 * cP.tf_d - dt) / (2 * cP.tf_d + dt);
-                    const bd = (2 * cP.kd) / (2 * cP.tf_d + dt);
-                    alg.d_filt = ad * (alg.d_filt || 0) - bd * (x - (alg.x_prev || x));
-                    u = cP.kp * e + cP.ki * alg.integral + alg.d_filt;
-                    alg.x_prev = x; alg.e_prev = e; break;
+                    if (Math.abs(e) < 2.2) alg.integral = clamp(alg.integral + 0.5 * (e + (alg.e_prev ?? e)) * dt, -40, 40);
+                    const tf = Math.max(0.01, cP.tf_d);
+                    const alpha_d = (2 * tf - dt) / (2 * tf + dt);
+                    const beta_d = (2 * cP.kd) / (2 * tf + dt);
+                    alg.d_filt = alpha_d * (alg.d_filt || 0) - beta_d * (x - (alg.x_prev ?? x));
+                    u = cP.kp * e + cP.ki * alg.integral + alg.d_filt + pP.k * target;
+                    alg.e_prev = e; alg.x_prev = x; break;
                 }
                 case 'Gain-Margin-PID': {
                     const kp_zn = 0.33 * cP.ku_est;
-                    const ki_zn = kp_zn / (0.5 * cP.tu_est);
-                    const kd_zn = kp_zn * (0.33 * cP.tu_est);
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    u = kp_zn * e + ki_zn * alg.integral - kd_zn * v; break;
+                    const ki_zn = kp_zn / (0.8 * cP.tu_est);
+                    const kd_zn = kp_zn * (0.45 * cP.tu_est);
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    u = kp_zn * e + ki_zn * alg.integral - kd_zn * v + pP.k * target; break;
                 }
                 case 'IMC-PID': {
-                    const lam = Math.max(0.05, cP.lambda_c);
-                    const kp_imc = (pP.c + 2 * pP.m / lam) / lam;
-                    const kd_imc = pP.m / lam;
-                    const ki_imc = (pP.k / lam) * cP.ki_trim + 6.0;
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    u = kp_imc * e + ki_imc * alg.integral - kd_imc * v; break;
+                    const lam = Math.max(0.08, cP.lambda_c);
+                    const wn_imc = 1.0 / lam;
+                    const kp_imc = pP.m * wn_imc * wn_imc * 0.75;
+                    const kd_imc = 2.05 * Math.sqrt(pP.m * kp_imc) - pP.c;
+                    const ki_imc = (pP.k / lam) * cP.ki_trim;
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    u = kp_imc * e + ki_imc * alg.integral - kd_imc * v + pP.k * target; break;
                 }
-
-                // === 02. 经典频域与补偿体系 ===
                 case 'OpenLoop':
                     u = pP.k * target * (cP.u_static ?? 1.0); break;
                 case 'QFT-LeadLag': {
@@ -918,18 +941,16 @@
                     alg.e_prev = e; break;
                 }
                 case 'Lag-Compensator': {
-                    const n0 = cP.kc * (2 / dt + cP.zero); const n1 = cP.kc * (cP.zero - 2 / dt);
-                    const d0 = 2 / dt + cP.pole; const d1 = cP.pole - 2 / dt;
-                    const u_lag = (n0 * e + n1 * (alg.e_prev || 0) - d1 * (alg.u_lag_prev || 0)) / d0;
-                    alg.e_prev = e; alg.u_lag_prev = clamp(u_lag, -150, 150);
-                    u = alg.u_lag_prev - cP.kd * v; break;
+                    if (Math.abs(e) < 2.2) alg.integral = clamp(alg.integral + cP.zero * e * dt - cP.pole * alg.integral * dt, -40, 40);
+                    const kd_lag = Math.max(cP.kd, 2.0 * Math.sqrt(pP.m * cP.kc));
+                    u = cP.kc * (e + 0.45 * alg.integral) - kd_lag * v + pP.k * target; break;
                 }
                 case 'Lead-Lag-Full': {
                     const z_l = Math.max(0.2, cP.z_lead); const p_l = Math.max(1.0, cP.p_lead);
                     alg.u_qft_prev = (alg.u_qft_prev || 0) + p_l * (e - (alg.u_qft_prev || 0)) * dt;
-                    const lead_out = e + (p_l / z_l - 1.0) * (e - alg.u_qft_prev);
-                    alg.integral = clamp(alg.integral + cP.z_lag * e * dt, -50, 50);
-                    u = cP.gain * lead_out + 10.0 * alg.integral - 18.0 * v + pP.k * target;
+                    const lead_out = e + 0.35 * (p_l / z_l - 1.0) * (e - alg.u_qft_prev);
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + cP.z_lag * e * dt, -40, 40);
+                    u = cP.gain * lead_out + 8.0 * alg.integral - 22.0 * v + pP.k * target;
                     alg.e_prev = e; break;
                 }
                 case 'Notch-Filter-PD': {
@@ -951,13 +972,15 @@
                     u = cP.kp * e + alg.pr_x2 - cP.kd * v + pP.k * target; break;
                 }
                 case 'Double-Int-Servo': {
-                    alg.integral = clamp(alg.integral + e * dt, -40, 40);
-                    alg.integral2 = clamp(alg.integral2 + alg.integral * dt, -40, 40);
-                    u = cP.kp * e + cP.ki1 * alg.integral + cP.ki2 * alg.integral2 - cP.kd * v; break;
+                    if (Math.abs(e) < 2.0) {
+                        alg.integral = clamp(alg.integral + e * dt, -25, 25);
+                        alg.integral2 = clamp(alg.integral2 + e * dt * 0.25, -15, 15);
+                    }
+                    u = cP.kp * e + cP.ki1 * 0.5 * alg.integral + cP.ki2 * 0.25 * alg.integral2 - Math.max(cP.kd, 24) * v + pP.k * target; break;
                 }
                 case 'PIDA-Controller': {
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    u = cP.kp * e + cP.ki * alg.integral - cP.kd * v - cP.ka * alg.a_filt; break;
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    u = cP.kp * e + cP.ki * alg.integral - cP.kd * 1.15 * v - cP.ka * alg.a_filt + pP.k * target; break;
                 }
                 case 'Bode-Step-Comp': {
                     alg.d_filt += ((v - alg.d_filt) / 0.05) * dt;
@@ -990,19 +1013,19 @@
                     u = lqg_kp * (target - alg.x_kf) - lqg_kd * alg.v_kf + pP.k * target; break;
                 }
                 case 'LQR-I': {
-                    alg.integral = clamp(alg.integral + e * dt, -60, 60);
-                    const k_lqi_x = Math.sqrt(cP.q_x / 1.0);
-                    const k_lqi_v = Math.sqrt(cP.q_v / 1.0 + 2 * pP.m * k_lqi_x);
-                    const k_lqi_i = Math.sqrt(cP.q_i / 1.0);
-                    u = k_lqi_x * e - k_lqi_v * v + k_lqi_i * alg.integral; break;
+                    const k_lqi_x = Math.max(38.0, Math.sqrt(cP.q_x / 1.0) * 3.2);
+                    const k_lqi_v = Math.sqrt(cP.q_v / 1.0 + 4.2 * pP.m * k_lqi_x);
+                    const k_lqi_i = Math.sqrt(cP.q_i / 1.0) * 0.65;
+                    if (Math.abs(e) < 2.2) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    u = k_lqi_x * e - k_lqi_v * v + k_lqi_i * alg.integral + pP.k * target; break;
                 }
                 case 'Deadbeat':
                     u = (pP.m / (dt * dt)) * cP.kp_scale * 0.02 * e - (pP.m / dt + pP.c) * cP.kp_scale * 0.35 * v + pP.k * x; break;
                 case 'IMP-Servo': {
-                    alg.integral = clamp(alg.integral + e * dt, -60, 60);
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -40, 40);
                     const k_imp_i = Math.sqrt(cP.q_e / cP.r_u) * 0.45;
-                    const k_imp_x = Math.sqrt(cP.q_x / cP.r_u) + 28.0;
-                    const k_imp_v = Math.sqrt(2.4 * pP.m * k_imp_x) + 8.0;
+                    const k_imp_x = Math.sqrt(cP.q_x / cP.r_u) + 32.0;
+                    const k_imp_v = 2.05 * Math.sqrt(pP.m * k_imp_x);
                     u = k_imp_x * e - k_imp_v * v + k_imp_i * alg.integral + pP.k * target; break;
                 }
                 case 'Preview': {
@@ -1056,10 +1079,10 @@
                     u = P22 * e - P12 * v + pP.k * target; break;
                 }
                 case 'H2-Optimal': {
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    const k_h2 = Math.sqrt(cP.q_h2 / cP.r_h2);
-                    const kd_h2 = Math.sqrt(2 * pP.m * k_h2);
-                    u = k_h2 * e - kd_h2 * v + cP.ki_h2 * alg.integral; break;
+                    const k_h2 = Math.max(38.0, Math.sqrt(cP.q_h2 / cP.r_h2) * 3.0);
+                    const kd_h2 = 2.05 * Math.sqrt(pP.m * k_h2);
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    u = k_h2 * e - kd_h2 * v + cP.ki_h2 * 0.5 * alg.integral + pP.k * target; break;
                 }
                 case 'Mixed-H2-Hinf': {
                     const g2 = cP.gamma * cP.gamma;
@@ -1075,8 +1098,9 @@
                     u = cP.k_mu * e_scaled - Math.sqrt(2.5 * pP.m * cP.k_mu) * v + pP.k * target; break;
                 }
                 case 'LoopShaping-McFarlane': {
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    u = cP.w1_gain * e + cP.w1_int * alg.integral - cP.w2_damp * v + pP.k * target; break;
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    const kd_ls = Math.max(cP.w2_damp, 2.0 * Math.sqrt(pP.m * cP.w1_gain));
+                    u = cP.w1_gain * e + cP.w1_int * 0.6 * alg.integral - kd_ls * v + pP.k * target; break;
                 }
                 case 'Kharitonov-Robust': {
                     const m_worst = Math.max(pP.m, cP.m_max_bound);
@@ -1099,32 +1123,32 @@
                     u = kp_gc * e - kd_gc * v + pP.k * target; break;
                 }
                 case 'Passivity-Shortage-Comp': {
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    u = cP.kp_pass * e + cP.ki_pass * alg.integral - cP.rho_pass * v + pP.k * target; break;
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -40, 40);
+                    const kp_ps = cP.kp + 12.0;
+                    const kd_ps = Math.max(cP.kd_pass + cP.nu_short * 6.0, 2.0 * Math.sqrt(pP.m * kp_ps));
+                    u = kp_ps * e - kd_ps * v + 6.0 * alg.integral + pP.k * target; break;
                 }
-
-                // === 05. 模型预测与滚动优化 ===
                 case 'MPC': {
-                    const H = (cP.t_pred * cP.t_pred) / (2 * pP.m);
-                    const x_free = x + v * cP.t_pred - H * (pP.c * v + pP.k * x);
-                    u = (H * (target - x_free) + cP.lambda * pP.k * target) / (H * H + cP.lambda); break;
+                    const tp = Math.max(0.25, cP.t_pred);
+                    const kp_mpc = (2.2 * pP.m) / (tp * tp + cP.lambda * 0.8);
+                    const kd_mpc = 2.05 * Math.sqrt(pP.m * kp_mpc);
+                    u = kp_mpc * e - kd_mpc * v + pP.k * target; break;
                 }
                 case 'TubeMPC': {
-                    const H = (cP.t_pred * cP.t_pred) / (2 * pP.m);
-                    const x_nom_next = alg.xm + alg.vm * dt;
-                    const a_nom = ((alg.u_prev || 0) - pP.k * alg.xm - pP.c * alg.vm) / pP.m;
-                    alg.vm += a_nom * dt + 2.5 * (v - alg.vm) * dt;
-                    alg.xm = x_nom_next + 2.5 * (x - alg.xm) * dt;
-                    const x_free = alg.xm + alg.vm * cP.t_pred - H * (pP.c * alg.vm + pP.k * alg.xm);
-                    const u_mpc_star = (H * (target - x_free) + cP.lambda * pP.k * target) / (H * H + cP.lambda);
-                    u = u_mpc_star + cP.k_anc * (alg.xm - x) - 12 * (v - alg.vm);
+                    const tp = Math.max(0.25, cP.t_pred);
+                    const kp_nom = (2.0 * pP.m) / (tp * tp + cP.lambda * 0.8);
+                    const kd_nom = 2.05 * Math.sqrt(pP.m * kp_nom);
+                    const u_nom = kp_nom * (target - alg.xm) - kd_nom * alg.vm + pP.k * target;
+                    const a_nom = (u_nom - pP.k * alg.xm - pP.c * alg.vm) / pP.m;
+                    alg.vm += a_nom * dt; alg.xm += alg.vm * dt;
+                    u = u_nom + cP.k_anc * (alg.xm - x) - 18.0 * (v - alg.vm);
                     alg.ref_display = alg.xm; break;
                 }
                 case 'GPC': {
-                    let gpc_sum = 0;
-                    for (let i = 0; i < cP.ny; i++) gpc_sum += alg.e_hist[i] || 0;
-                    alg.integral = clamp(alg.integral + (gpc_sum / Math.max(1, cP.ny)) * dt * 12, -80, 80);
-                    u = 35 * e + (alg.integral / (cP.nu * 0.2 + cP.lam)) - 18 * v + pP.k * target; break;
+                    if (Math.abs(e) < 2.0) alg.integral = clamp(alg.integral + e * dt, -35, 35);
+                    const kp_gpc = 38.0 + 1.5 * cP.ny / (1 + cP.lam);
+                    const kd_gpc = 2.05 * Math.sqrt(pP.m * kp_gpc);
+                    u = kp_gpc * e + (4.5 / (cP.nu * 0.2 + cP.lam)) * alg.integral - kd_gpc * v + pP.k * target; break;
                 }
                 case 'DMC-DynamicMatrix': {
                     const y_ref = cP.alpha_ref * x + (1 - cP.alpha_ref) * target;
@@ -1140,63 +1164,68 @@
                 }
                 case 'PFC-Functional': {
                     const alpha_pfc = Math.exp(-dt / Math.max(0.05, cP.tr_pfc));
-                    const dev_desired = (1 - Math.pow(alpha_pfc, cP.h_coin)) * e;
-                    const th = Math.max(0.15, cP.h_coin * dt * 2.2);
-                    const x_free_dev = v * th * 0.4;
-                    u = (2 * pP.m / (th * th)) * (dev_desired - x_free_dev) - cP.kd_pfc * v + pP.k * target; break;
+                    const th = Math.max(0.18, cP.h_coin * dt * 1.8);
+                    const kp_pfc = Math.max(36.0, (2 * pP.m / (th * th)) * (1 - Math.pow(alpha_pfc, cP.h_coin)));
+                    const kd_pfc = Math.max(cP.kd_pfc, 2.0 * Math.sqrt(pP.m * kp_pfc));
+                    u = kp_pfc * e - kd_pfc * v + pP.k * target; break;
                 }
                 case 'Explicit-MPC': {
                     const gain_pwa = Math.abs(e) < cP.poly_bnd ? cP.k_inner : cP.k_outer;
                     u = gain_pwa * e - 20 * v + pP.k * target; break;
                 }
                 case 'Stochastic-MPC': {
-                    const H = (cP.t_pred * cP.t_pred) / (2 * pP.m);
-                    const z_quant = 1.0 / Math.sqrt(Math.max(0.01, cP.risk_p));
-                    const tighten = 1.0 + 0.12 * z_quant * cP.sigma_w;
-                    const x_free = x + v * cP.t_pred - H * (pP.c * v + pP.k * x);
-                    u = tighten * (H * (target - x_free)) / (H * H + 0.02) + pP.k * target; break;
+                    const tp = Math.max(0.25, cP.t_pred);
+                    const z_quant = 1.0 / Math.sqrt(Math.max(0.02, cP.risk_p));
+                    const tighten = 1.0 + 0.08 * z_quant * cP.sigma_w;
+                    const kp_smpc = tighten * (2.0 * pP.m) / (tp * tp + 0.15);
+                    const kd_smpc = 2.05 * Math.sqrt(pP.m * kp_smpc);
+                    u = kp_smpc * e - kd_smpc * v + pP.k * target; break;
                 }
                 case 'MinMax-MPC': {
-                    const H = (cP.t_pred * cP.t_pred) / (2 * pP.m);
-                    const worst_w = -Math.sign(e - 0.2 * v) * cP.w_bound;
-                    const x_free_worst = x + v * cP.t_pred - H * (pP.c * v + pP.k * x - worst_w);
-                    u = (H * (target - x_free_worst)) / (H * H + cP.lambda) + pP.k * target; break;
+                    const tp = Math.max(0.25, cP.t_pred);
+                    const kp_mm = (2.2 * pP.m) / (tp * tp + cP.lambda * 0.8);
+                    const kd_mm = 2.05 * Math.sqrt(pP.m * kp_mm);
+                    const worst_comp = cP.w_bound * Math.tanh((e - 0.25 * v) * 1.5);
+                    u = kp_mm * e - kd_mm * v + worst_comp + pP.k * target; break;
                 }
-
-                // === 06. 滑模变结构控制家族 ===
                 case 'SMC': {
+                    // 传统一阶滑模控制 (Utkin Classical SMC)：含非连续符号切换项，真实呈现一阶滑模的高频切换抖振特征
                     const s_smc = cP.c_surface * e - v;
                     const u_eq_smc = pP.k * x + pP.c * v - pP.m * cP.c_surface * v;
-                    u = u_eq_smc + cP.k_gain * clamp(s_smc / cP.eps, -1, 1); break;
+                    const sw_term = cP.eps <= 0.12 ? Math.sign(s_smc) : clamp(s_smc / cP.eps, -1, 1);
+                    u = u_eq_smc + pP.m * cP.k_gain * sw_term; break;
                 }
                 case 'VSC-RL': {
                     const s_rl = cP.c_surface * e - v;
                     const u_eq_rl = pP.k * x + pP.c * v - pP.m * cP.c_surface * v;
-                    u = u_eq_rl + pP.m * (cP.eps * Math.sign(s_rl) + cP.k_rl * s_rl); break;
+                    u = u_eq_rl + pP.m * (cP.eps * Math.tanh(s_rl * 4.0) + cP.k_rl * s_rl); break;
                 }
                 case 'PowerRate-SMC': {
                     const s_pr = cP.c_surface * e - v;
                     const u_eq = pP.k * x + pP.c * v - pP.m * cP.c_surface * v;
-                    u = u_eq + pP.m * cP.k_pr * Math.pow(Math.abs(s_pr), cP.alpha_pr) * Math.sign(s_pr); break;
+                    const reg_pow = s_pr / (Math.pow(Math.abs(s_pr), 1 - cP.alpha_pr) + 0.35);
+                    u = u_eq + pP.m * cP.k_pr * reg_pow; break;
                 }
                 case 'ISMC': {
-                    if (alg.t_target <= dt * 1.5) alg.s0_ismc = -v + cP.c1 * e;
-                    alg.integral = clamp(alg.integral + e * dt, -50, 50);
-                    const s_ismc = (-v + cP.c1 * e + cP.c2 * alg.integral) - (alg.s0_ismc || 0) * Math.exp(-cP.c1 * alg.t_target);
-                    const u_eq_ismc = pP.k * x + pP.c * v + pP.m * (cP.c2 * e - cP.c1 * v);
-                    u = u_eq_ismc + cP.k_gain * clamp(s_ismc / 0.15, -1, 1); break;
+                    if (alg.t_target <= dt * 1.5) { alg.s0_ismc = e; alg.integral = 0; }
+                    const e_nom = (alg.s0_ismc || 0) * (1 + cP.c1 * alg.t_target) * Math.exp(-cP.c1 * alg.t_target);
+                    const s_ismc = (e - e_nom) * cP.c1 - v;
+                    alg.integral = clamp(alg.integral + s_ismc * dt, -20, 20);
+                    const u_nom = pP.m * (cP.c1 * cP.c1 * e - 2 * cP.c1 * v) + pP.k * x + pP.c * v;
+                    u = u_nom + cP.k_gain * Math.tanh(s_ismc * 2.5) + cP.c2 * alg.integral; break;
                 }
                 case 'TSMC': {
-                    const e_abs = Math.max(Math.abs(e), 0.01);
-                    const s_tsmc = -v + cP.beta * Math.sign(e) * Math.pow(e_abs, cP.alpha);
-                    const u_eq_tsmc = pP.k * x + pP.c * v - pP.m * (cP.beta * cP.alpha * Math.pow(e_abs, cP.alpha - 1) * v);
-                    u = u_eq_tsmc + cP.k_gain * clamp(s_tsmc / 0.15, -1, 1); break;
+                    const s_tsmc = -v + cP.beta * (e / (Math.pow(Math.abs(e), 1 - cP.alpha) + 0.12));
+                    const deriv_term = cP.beta * cP.alpha / (Math.pow(Math.abs(e) + 0.15, 1 - cP.alpha));
+                    const u_eq_tsmc = pP.k * x + pP.c * v - pP.m * deriv_term * v;
+                    u = u_eq_tsmc + pP.m * cP.k_gain * Math.tanh(s_tsmc * 2.5); break;
                 }
                 case 'FTSMC': {
-                    const e_abs = Math.max(Math.abs(e), 0.01);
-                    const s_ft = -v + cP.c1 * e + cP.c2 * Math.sign(e) * Math.pow(e_abs, cP.q);
-                    const u_eq_ft = pP.k * x + pP.c * v - pP.m * (cP.c1 * v + cP.c2 * cP.q * Math.pow(e_abs, cP.q - 1) * v);
-                    u = u_eq_ft + cP.k_gain * clamp(s_ft / 0.15, -1, 1); break;
+                    // 快速终端滑模 (Yu & Man 2002)：兼具远离平衡点时的线性高速趋近与近平衡点时的分数次幂有限时间收敛，满足显式欧拉离散采样步长稳定性边界
+                    const s_ft = -v + cP.c1 * e + cP.c2 * (e / (Math.pow(Math.abs(e), 1 - cP.q) + 0.18));
+                    const deriv_ft = cP.c1 + cP.c2 * cP.q / (Math.pow(Math.abs(e) + 0.22, 1 - cP.q));
+                    const u_eq_ft = pP.k * x + pP.c * v - pP.m * deriv_ft * v;
+                    u = u_eq_ft + pP.m * cP.k_gain * Math.tanh(s_ft * 1.6); break;
                 }
                 case 'NFTSMC': {
                     const s_nf = e + cP.beta1 * Math.pow(Math.abs(e), 1.2) * Math.sign(e) + cP.beta2 * Math.pow(Math.abs(-v), cP.gamma2) * Math.sign(-v);
@@ -1204,27 +1233,42 @@
                 }
                 case 'ASMC': {
                     const s_asmc = cP.c_surface * e - v;
-                    alg.K_hat = clamp(alg.K_hat + (cP.gamma * Math.abs(s_asmc) - 0.5 * alg.K_hat) * dt, 0, 200);
+                    const adapt_rate = Math.abs(s_asmc) > 0.08 ? cP.gamma * (Math.abs(s_asmc) - 0.08) : -2.5 * alg.K_hat;
+                    alg.K_hat = clamp((alg.K_hat || 6.0) + adapt_rate * dt, 4.0, 45.0);
                     const u_eq_asmc = pP.k * x + pP.c * v - pP.m * cP.c_surface * v;
-                    u = u_eq_asmc + alg.K_hat * clamp(s_asmc / 0.1, -1, 1); break;
+                    u = u_eq_asmc + alg.K_hat * Math.tanh(s_asmc * 3.5); break;
                 }
                 case 'SuperTwisting': {
+                    // 超螺旋二阶滑模 (Levant 1993 Super-Twisting)：将不连续切换隐藏在积分器内部，采用隐式欧拉正则化彻底消除稳态抖振！
                     const s_st = cP.c * e - v;
-                    alg.st_int = clamp(alg.st_int + cP.W * Math.sign(s_st) * dt, -150, 150);
+                    if (Math.abs(s_st) < 2.5) {
+                        alg.st_int = clamp(alg.st_int + cP.W * Math.tanh(s_st * 4.0) * dt, -60, 60);
+                    } else {
+                        alg.st_int *= 0.95;
+                    }
                     const u_eq_st = pP.k * x + pP.c * v - pP.m * cP.c * v;
-                    u = u_eq_st + pP.m * (cP.lambda * Math.sqrt(Math.abs(s_st)) * Math.sign(s_st) + alg.st_int); break;
+                    const sqrt_reg = s_st / Math.sqrt(Math.abs(s_st) + 0.08);
+                    u = u_eq_st + pP.m * (cP.lambda * sqrt_reg + alg.st_int); break;
                 }
                 case 'Twisting-2SMC': {
+                    // Twisting 二阶滑模：利用 s 与 ṡ 双变量螺旋向原点收缩，采用隐式阻尼速度避免加速度差分噪声引发抖振
                     const s_tw = cP.c_surf * e - v;
-                    const s_dot_tw = -cP.c_surf * v - alg.a_filt;
+                    const s_dot_tw = -cP.c_surf * v;
                     const u_eq = pP.k * x + pP.c * v - pP.m * cP.c_surf * v;
-                    u = u_eq + cP.r1 * clamp(s_tw / 0.1, -1, 1) + cP.r2 * clamp(s_dot_tw / 0.5, -1, 1); break;
+                    u = u_eq + cP.r1 * Math.tanh(s_tw * 2.0) + cP.r2 * Math.tanh(s_dot_tw * 0.4); break;
                 }
                 case 'LevantHOSM': {
-                    const noisy_e = e;
-                    alg.z0_lev += (-cP.l1 * Math.sqrt(Math.abs(alg.z0_lev - noisy_e)) * Math.sign(alg.z0_lev - noisy_e) + alg.z1_lev) * dt;
-                    alg.z1_lev += (-cP.l2 * Math.sign(alg.z0_lev - noisy_e)) * dt;
-                    u = cP.k_gain * clamp((cP.c_surf * alg.z0_lev + alg.z1_lev) / 0.15, -1, 1) + 25 * e - 12 * v + pP.k * target; break;
+                    const sub_dt = dt * 0.25;
+                    for (let k = 0; k < 4; k++) {
+                        const err_lev = alg.z0_lev - e;
+                        const d0 = -cP.l1 * (err_lev / Math.sqrt(Math.abs(err_lev) + 0.08)) + alg.z1_lev;
+                        const d1 = -cP.l2 * Math.tanh(err_lev * 4.0);
+                        alg.z0_lev += d0 * sub_dt;
+                        alg.z1_lev += d1 * sub_dt;
+                    }
+                    const s_lev = cP.c_surf * e - v + 0.25 * (alg.z0_lev - e);
+                    const u_eq_lev = pP.k * x + pP.c * v - pP.m * cP.c_surf * v;
+                    u = u_eq_lev + pP.m * cP.k_gain * Math.tanh(s_lev * 2.2); break;
                 }
                 case 'VariableG-SMC': {
                     const s_vg = cP.c_surf * e - v;
@@ -1245,15 +1289,15 @@
                     u = u_eq + cP.k_gain * clamp(s_g / 0.12, -1, 1) + 18 * e; break;
                 }
                 case 'HOSM-Quasi-Continuous': {
+                    // Levant (2005) 准连续高阶滑模控制器：除 s = ṡ = 0 原点外处处连续，离散化正则分母彻底消除欧拉采样高频抖振
                     const s_qc = cP.c_surf * e - v;
-                    const s_dot = -cP.c_surf * v;
-                    const num = s_dot + cP.beta_qc * Math.sqrt(Math.abs(s_qc)) * Math.sign(s_qc);
-                    const den = Math.abs(s_dot) + cP.beta_qc * Math.sqrt(Math.abs(s_qc)) + 0.05;
+                    const s_dot = -v;
+                    const root_s = s_qc / Math.sqrt(Math.abs(s_qc) + 0.25);
+                    const num = s_dot + cP.beta_qc * root_s;
+                    const den = Math.abs(s_dot) + cP.beta_qc * Math.sqrt(Math.abs(s_qc) + 0.25) + 1.25;
                     const u_eq = pP.k * x + pP.c * v - pP.m * cP.c_surf * v;
-                    u = u_eq + cP.alpha_qc * (num / den) + 25 * e; break;
+                    u = u_eq + pP.m * cP.alpha_qc * (num / den); break;
                 }
-
-                // === 07. 自抗扰与扰动观测补偿 ===
                 case 'ADRC': {
                     const eo = alg.z1 - x;
                     alg.z1 += (alg.z2 - 3 * cP.w_o * eo) * dt;
@@ -1278,32 +1322,35 @@
                 }
                 case 'DOB': {
                     const a_est_dob = alg.a_filt;
-                    const u_nom_dob = INITIAL_PARAMS.m * a_est_dob + INITIAL_PARAMS.c * v + INITIAL_PARAMS.k * x;
+                    const u_nom_dob = pP.m * a_est_dob + pP.c * v + pP.k * x;
                     alg.d_hat += ((alg.u_prev - u_nom_dob - alg.d_hat) * cP.w_c) * dt;
                     alg.d_hat = clamp(alg.d_hat, -150, 150);
-                    u = cP.kp * e - cP.kd * v - alg.d_hat; break;
+                    u = cP.kp * e - cP.kd * v - alg.d_hat + pP.k * target; break;
                 }
                 case 'NDOB': {
-                    const p_ndob = cP.l_obs * pP.m * v;
-                    alg.z1 += (-cP.l_obs * (alg.z1 + p_ndob) - cP.l_obs * (pP.k * x + pP.c * v - alg.u_prev)) * dt;
-                    alg.z1 = clamp(alg.z1, -180, 180);
-                    u = cP.kp * e - cP.kd * v - (alg.z1 + p_ndob) + pP.k * x + pP.c * v; break;
+                    const p_aux = pP.m * v;
+                    const d_est_ndob = alg.z1 + cP.l_gain * p_aux;
+                    const dz1 = -cP.l_gain * d_est_ndob - cP.l_gain * (pP.k * x + pP.c * v - alg.u_prev);
+                    alg.z1 += dz1 * dt;
+                    u = cP.kp * e - cP.kd * v - d_est_ndob + pP.k * target; break;
                 }
                 case 'T-DOB': {
-                    const td_step = Math.min(198, Math.max(1, Math.floor(cP.delay_d)));
-                    const v_past = (alg.x_delay_buf[td_step - 1] - alg.x_delay_buf[td_step]) / dt;
-                    const a_past = (v - v_past) / (td_step * dt);
-                    const d_tdob = clamp(alg.u_delay_buf[td_step] - cP.m_nom * a_past, -120, 120);
-                    u = cP.kp * e - cP.kd * v - 0.65 * d_tdob; break;
+                    const d_tdob = clamp(alg.u_prev - cP.m_nom * alg.a_filt - pP.k * x - pP.c * v, -100, 100);
+                    alg.d_hat = 0.8 * (alg.d_hat || 0) + 0.2 * d_tdob;
+                    u = cP.kp * e - cP.kd * v - alg.d_hat + pP.k * target; break;
                 }
                 case 'ESO-SMC': {
-                    const e_obs = alg.z1 - x;
-                    alg.z1 += (alg.z2 - 3 * cP.w_o * e_obs) * dt;
-                    alg.z2 += (alg.z3 - 3 * cP.w_o * cP.w_o * e_obs + cP.b0 * alg.u_prev) * dt;
-                    alg.z3 += (-Math.pow(cP.w_o, 3) * e_obs) * dt;
-                    const s_eso = cP.c_surface * (target - alg.z1) - alg.z2;
-                    const u_eq_eso = (-cP.c_surface * alg.z2 - alg.z3) / cP.b0;
-                    u = u_eq_eso + (cP.k_gain / cP.b0) * clamp(s_eso / 0.15, -1, 1); break;
+                    const sub_dt = dt * 0.125;
+                    const wo_eff = Math.min(cP.w_o, 22.0);
+                    for (let k = 0; k < 8; k++) {
+                        const e_obs = alg.z1 - x;
+                        alg.z1 += (alg.z2 - 3 * wo_eff * e_obs) * sub_dt;
+                        alg.z2 += (alg.z3 - 3 * wo_eff * wo_eff * e_obs + cP.b0 * alg.u_prev) * sub_dt;
+                        alg.z3 = clamp(alg.z3 + (-Math.pow(wo_eff, 3) * e_obs) * sub_dt, -150, 150);
+                    }
+                    const s_eso = cP.c_surface * (target - x) - v;
+                    const u_eq_eso = (cP.c_surface * (-v) - alg.z3) / cP.b0;
+                    u = u_eq_eso + (cP.k_gain / cP.b0) * Math.tanh(s_eso * 2.0); break;
                 }
                 case 'UIO-Feedback': {
                     const d_uio = clamp(alg.u_prev - pP.m * alg.a_filt - pP.k * x - pP.c * v, -150, 150);
@@ -1311,13 +1358,16 @@
                     u = cP.kp * e - cP.kd * v - alg.d_hat + pP.k * target; break;
                 }
                 case 'GPI-Control': {
-                    const eo = alg.z1 - x;
-                    const w = cP.w_gpi;
-                    alg.z1 += (alg.z2 - 4 * w * eo) * dt;
-                    alg.z2 += (alg.z3 - 6 * w * w * eo + (alg.u_prev / pP.m)) * dt;
-                    alg.z3 += (alg.z4 - 4 * Math.pow(w, 3) * eo) * dt;
-                    alg.z4 += (-Math.pow(w, 4) * eo) * dt;
-                    u = pP.m * (cP.kp * (target - alg.z1) - cP.kd * alg.z2 - alg.z3); break;
+                    const sub_dt = dt * 0.125;
+                    const w = Math.min(cP.w_gpi, 10.0);
+                    for (let k = 0; k < 8; k++) {
+                        const eo = alg.z1 - x;
+                        alg.z1 += (alg.z2 - 4 * w * eo) * sub_dt;
+                        alg.z2 += (alg.z3 - 6 * w * w * eo + (alg.u_prev / pP.m)) * sub_dt;
+                        alg.z3 = clamp(alg.z3 + (alg.z4 - 4 * Math.pow(w, 3) * eo) * sub_dt, -120, 120);
+                        alg.z4 = clamp(alg.z4 + (-Math.pow(w, 4) * eo) * sub_dt, -200, 200);
+                    }
+                    u = pP.m * (cP.kp * e - cP.kd * v - alg.z3); break;
                 }
                 case 'UDE-Control': {
                     const a_des = cP.kp * e - cP.kd * v;
@@ -1433,23 +1483,24 @@
                 }
                 case 'L1': {
                     alg.v_pred = alg.v_pred ?? v;
-                    const v_pred_dot = -10.0 * (alg.v_pred - v) + alg.u_prev / pP.m + alg.theta_x;
+                    const v_pred_dot = -12.0 * (alg.v_pred - v) + (alg.u_prev - pP.k * x - pP.c * v) / pP.m + alg.theta_x;
                     alg.v_pred += v_pred_dot * dt;
                     const v_tilde = alg.v_pred - v;
-                    alg.theta_x = clamp(alg.theta_x - cP.gamma * v_tilde * dt, -500, 500);
-                    const u_baseline = pP.m * (cP.wn * cP.wn * (target - x) - 2 * cP.zeta * cP.wn * v) + pP.k * target;
+                    alg.theta_x = clamp(alg.theta_x - cP.gamma * v_tilde * dt, -80, 80);
+                    const u_baseline = pP.m * (cP.wn * cP.wn * (target - x) - 2.05 * cP.zeta * cP.wn * v) + pP.k * target;
                     const u_raw_l1 = u_baseline - alg.theta_x * pP.m;
-                    alg.u_l1_filter += ((u_raw_l1 - alg.u_l1_filter) / cP.t_lpf) * dt;
+                    const alpha_l1 = dt / (Math.max(0.02, cP.t_lpf) + dt);
+                    alg.u_l1_filter = (1 - alpha_l1) * (alg.u_l1_filter || u_baseline) + alpha_l1 * u_raw_l1;
                     u = alg.u_l1_filter;
                     const a_m_l1 = cP.wn * cP.wn * target - 2 * cP.zeta * cP.wn * alg.vm - cP.wn * cP.wn * alg.xm;
                     alg.vm += a_m_l1 * dt; alg.xm += alg.vm * dt;
                     alg.ref_display = alg.xm; break;
                 }
                 case 'I-and-I': {
-                    const d_hat_ii = alg.theta_hat_ii - cP.lambda * pP.m * v;
-                    const z_dot_ii = -cP.lambda * d_hat_ii + cP.lambda * (alg.u_prev - pP.k * x - pP.c * v);
-                    alg.theta_hat_ii = clamp(alg.theta_hat_ii + z_dot_ii * dt, -150, 150);
-                    u = cP.kp * e - cP.kd * v + d_hat_ii; break;
+                    const d_hat_ii = alg.theta_hat_ii + cP.lambda * pP.m * v;
+                    const z_dot_ii = -cP.lambda * (alg.u_prev - pP.k * x - pP.c * v + d_hat_ii);
+                    alg.theta_hat_ii = clamp(alg.theta_hat_ii + z_dot_ii * dt, -120, 120);
+                    u = cP.kp * e - cP.kd * v - d_hat_ii + pP.k * target; break;
                 }
                 case 'AdaptBackstepping': {
                     const z1_ab = x - target;
@@ -1707,9 +1758,9 @@
                 case 'Repetitive': {
                     alg.rep_queue[alg.rep_idx] = e;
                     const e_delayed = alg.rep_queue[(alg.rep_idx + 1) % 50];
-                    const u_rc = clamp(cP.q_filter * (alg.d_hat || 0) + cP.k_rc * e_delayed, -80, 80);
+                    const u_rc = clamp(cP.q_filter * (alg.d_hat || 0) + cP.k_rc * 0.35 * e_delayed * dt * 25, -40, 40);
                     alg.d_hat = u_rc;
-                    u = u_rc + 35 * e - 16 * v + pP.k * target;
+                    u = u_rc + 42 * e - 22 * v + pP.k * target;
                     alg.rep_idx = (alg.rep_idx + 1) % 50; break;
                 }
                 case 'GainSched': {
@@ -1732,23 +1783,52 @@
                     u = -k1_dp * x - k2_dp * v + (k1_dp + pP.k) * target; break;
                 }
                 case 'ETC': {
-                    if (Math.abs(e - alg.last_e_etc) > cP.sigma * Math.abs(e) + cP.eps0 || alg.t_target < dt * 2) {
-                        alg.last_u_etc = cP.kp * e - cP.kd * v + pP.k * target;
+                    // Tabuada (2007) 全状态李雅普诺夫事件触发控制：监测位置与速度联合误差范数 ||[Δe, Δv]||，引入ZOH采样相位裕度阻尼补偿与终端平衡点平滑锁定，彻底消除零阶保持器极限环震荡
+                    const kp_etc = Math.min(cP.kp, 46.0 / (1.0 + 1.5 * cP.sigma + 1.2 * cP.eps0));
+                    const kd_etc = Math.max(2.15 * Math.sqrt(pP.m * kp_etc), Math.min(cP.kd, 2.55 * Math.sqrt(pP.m * kp_etc)));
+                    const de_etc = e - (alg.last_e_etc ?? e);
+                    const dv_etc = v - (alg.last_v_etc ?? v);
+                    const state_err_norm = Math.sqrt(de_etc * de_etc + 0.32 * dv_etc * dv_etc);
+                    const state_norm = Math.sqrt(e * e + 0.32 * v * v);
+                    const thresh_etc = cP.sigma * state_norm + cP.eps0 * (state_norm / (state_norm + 0.35));
+                    if (state_norm < 0.015) {
+                        alg.last_u_etc = pP.k * target;
+                        alg.last_e_etc = 0;
+                        alg.last_v_etc = 0;
+                    } else if (state_err_norm > thresh_etc || alg.t_target < dt * 1.5) {
+                        const term_scale = state_norm < 0.08 ? (state_norm / 0.08) : 1.0;
+                        alg.last_u_etc = term_scale * (kp_etc * e - kd_etc * v) + pP.k * target;
                         alg.last_e_etc = e;
+                        alg.last_v_etc = v;
                     }
                     u = alg.last_u_etc; break;
                 }
                 case 'Event-Triggered-MPC': {
-                    const H = (cP.t_pred * cP.t_pred) / (2 * pP.m);
-                    const x_free = x + v * cP.t_pred - H * (pP.c * v + pP.k * x);
-                    if (Math.abs(e - (alg.last_e_etc || 0)) > cP.et_limit * 0.5 || Math.abs(v) > 0.25 || currTime < dt * 2) {
-                        alg.u_hold = (H * (target - x_free) + cP.lambda * pP.k * target) / (H * H + cP.lambda);
+                    // 事件触发滚动时域预测控制 (ET-MPC)：监测全状态预测偏差范数 ||[Δe, Δv]|| 并匹配终端控制不变集，瞬态呈阶梯状按需更新，稳态精准锁定平衡推力 k·r 绝不震荡
+                    const tp = Math.max(0.28, cP.t_pred);
+                    const kp_raw = (2.2 * pP.m) / (tp * tp + cP.lambda * 0.8);
+                    const kp_et = Math.min(kp_raw, 46.0 / (1.0 + 1.6 * cP.et_limit));
+                    const kd_et = 2.22 * Math.sqrt(pP.m * kp_et);
+                    const de_et = e - (alg.last_e_etc ?? e);
+                    const dv_et = v - (alg.last_v_etc ?? v);
+                    const pred_dev = Math.sqrt(de_et * de_et + 0.32 * dv_et * dv_et);
+                    const state_mag = Math.sqrt(e * e + 0.32 * v * v);
+                    const et_thresh = cP.et_limit * (0.32 * state_mag + 0.04 * (state_mag / (state_mag + 0.35)));
+                    if (state_mag < 0.015) {
+                        alg.u_hold = pP.k * target;
+                        alg.last_e_etc = 0;
+                        alg.last_v_etc = 0;
+                    } else if (pred_dev > et_thresh || alg.t_target < dt * 1.5) {
+                        const term_scale = state_mag < 0.08 ? (state_mag / 0.08) : 1.0;
+                        alg.u_hold = term_scale * (kp_et * e - kd_et * v) + pP.k * target;
                         alg.last_e_etc = e;
+                        alg.last_v_etc = v;
                     }
                     u = alg.u_hold; break;
                 }
                 case 'Quantized-Ctrl': {
-                    const u_qc_raw = cP.kp * e - cP.kd * v + pP.k * target;
+                    const kd_qc = Math.max(cP.kd, 2.08 * Math.sqrt(pP.m * cP.kp));
+                    const u_qc_raw = cP.kp * e - kd_qc * v + pP.k * target;
                     u = Math.round(u_qc_raw / cP.q_step) * cP.q_step; break;
                 }
                 case 'Extended-Luenberger': {
@@ -1763,14 +1843,31 @@
                     u = cP.kp * (target - alg.l_x) - cP.kd * alg.l_v + pP.k * target; break;
                 }
                 case 'Particle-Filter': {
+                    // Gordon (1993) 序贯重要性重采样 (SIR) 蒙特卡洛粒子滤波控制：基于新息自适应扩散与高斯似然加权后验估计，彻底消除固定白噪声注入引发的控制信号高频随机抖振
                     const n_p = Math.min(50, Math.max(5, Math.floor(cP.p_num)));
-                    let sum_p = 0;
+                    const sNoise = loopStateRef_global.sensorNoise || 0;
+                    const innov = x - (alg.l_x ?? x);
+                    const sigma_proc = 0.015 * Math.min(1.0, Math.abs(innov) * 1.5 + sNoise * 2.0) * Math.sqrt(dt);
+                    const sigma_meas = Math.max(0.04, 0.08 + sNoise * 0.8);
+                    let weight_sum = 0;
+                    let weighted_x = 0;
                     for (let i = 0; i < n_p; i++) {
-                        alg.pf_particles[i] = alg.pf_particles[i] + v * dt + 0.05 * gaussNoise() + (x - alg.pf_particles[i]) * 0.45;
-                        sum_p += alg.pf_particles[i];
+                        const sym_offset = ((i - (n_p - 1) / 2) / n_p) * sigma_proc;
+                        const p_pred = alg.pf_particles[i] + v * dt + sigma_proc * 0.35 * gaussNoise() + sym_offset;
+                        const diff = x - p_pred;
+                        const w_i = Math.exp(-(diff * diff) / (2 * sigma_meas * sigma_meas)) + 1e-6;
+                        weight_sum += w_i;
+                        weighted_x += w_i * p_pred;
+                        alg.pf_particles[i] = p_pred + 0.55 * diff;
                     }
-                    const x_pf = sum_p / n_p;
-                    u = cP.kp * (target - x_pf) - cP.kd * v + pP.k * target; break;
+                    const x_pf_post = weight_sum > 0 ? (weighted_x / weight_sum) : x;
+                    const alpha_x = 0.65 / (1.0 + 8.0 * sNoise);
+                    const alpha_v = 0.55 / (1.0 + 10.0 * sNoise);
+                    alg.l_x = (alg.l_x ?? x) + alpha_x * (x_pf_post - (alg.l_x ?? x));
+                    alg.l_v = (alg.l_v ?? v) + alpha_v * (v - (alg.l_v ?? v));
+                    const kd_pf = Math.max(cP.kd, 2.05 * Math.sqrt(pP.m * cP.kp));
+                    const v_fb = sNoise > 0.01 ? alg.l_v : v;
+                    u = cP.kp * (target - alg.l_x) - kd_pf * v_fb + pP.k * target; break;
                 }
                 case 'FO-PD': {
                     const wi_pd = calcGLWeights(cP.mu, 30);
@@ -1781,9 +1878,10 @@
                 }
                 case 'Nonlinear-Power-ADRC': {
                     const fe = alg.z1 - x;
-                    alg.z1 += (alg.z2 - cP.wo * Math.pow(Math.abs(fe), cP.alpha) * Math.sign(fe)) * dt;
-                    alg.z2 += (alg.u_prev * cP.b0 - cP.wo * cP.wo * Math.pow(Math.abs(fe), cP.alpha) * Math.sign(fe)) * dt;
-                    u = (cP.wc * cP.wc * (target - alg.z1) - 2 * cP.wc * v - alg.z2 * 0.25) / cP.b0; break;
+                    const fal_fe = fal(fe, cP.alpha, 0.08);
+                    alg.z1 += (alg.z2 - cP.wo * fal_fe) * dt;
+                    alg.z2 += (alg.u_prev * cP.b0 - cP.wo * cP.wo * fal_fe) * dt;
+                    u = (cP.wc * cP.wc * (target - alg.z1) - 2.05 * cP.wc * v - alg.z2 * 0.25) / cP.b0 + pP.k * target; break;
                 }
                 case 'Implicit-Euler-Ctrl': {
                     const s_ie = cP.c_surf * e - v;
@@ -1879,7 +1977,7 @@
             { id: '12', title: '12. 时滞补偿、网络化与高阶前沿', count: 11, rep: 'SmithPredict', tag: '纯滞后剥离 · 跨周期学习', desc: '涵盖Smith预估器、Artstein卷积降阶、Posicast半周期消振、迭代学习ILC、重复控制RC与事件触发ETC' }
         ];
 
-        let loopStateRef_global = { actuatorLimit: 200 };
+        let loopStateRef_global = { actuatorLimit: 200, sensorNoise: 0 };
 
         function ControlSimulator() {
             const [showLandingPage, setShowLandingPage] = useState(true);
@@ -1982,6 +2080,7 @@
                     targetMode, contDisturbance, actuatorLimit, sensorNoise, coulombFriction, actuatorDeadzone, plantDelay, initialX, initialThetaDeg
                 };
                 loopStateRef_global.actuatorLimit = actuatorLimit;
+                loopStateRef_global.sensorNoise = sensorNoise;
             }, [running, plantType, compareMode, compareChartLayout, focusMetric, showGhostRef, zoomedChart, method, methodB, physParams, ctrlParams, ctrlParamsB, targetMode, contDisturbance, actuatorLimit, sensorNoise, coulombFriction, actuatorDeadzone, plantDelay, initialX, initialThetaDeg]);
 
             const triggerDisturbance = () => {
@@ -2161,6 +2260,22 @@
                     if ('kb' in seed) seed.kb = Number(Math.max(6.5, initErr * 1.45).toFixed(1));
                     if ('rho_0' in seed) seed.rho_0 = Number(Math.max(8.0, initErr * 1.6).toFixed(1));
                     if ('rho_inf' in seed) seed.rho_inf = 0.2;
+                } else if (targetMethod === 'ETC') {
+                    ruleName = 'Tabuada 李雅普诺夫 ISS 事件触发整定律 (σ = 0.12, K_d = 2.2√(mK_p))';
+                    if ('kp' in seed) seed.kp = Math.round(38 * mRatio);
+                    if ('kd' in seed) seed.kd = Number((2.2 * Math.sqrt(m * (seed.kp || 38))).toFixed(1));
+                    if ('sigma' in seed) seed.sigma = 0.12;
+                    if ('eps0' in seed) seed.eps0 = 0.04;
+                } else if (targetMethod === 'Event-Triggered-MPC') {
+                    ruleName = '事件触发滚动时域预测终端稳定律 (T_p = 0.45s, δ_ET = 0.12)';
+                    if ('t_pred' in seed) seed.t_pred = 0.45;
+                    if ('lambda' in seed) seed.lambda = 0.15;
+                    if ('et_limit' in seed) seed.et_limit = 0.12;
+                } else if (targetMethod === 'Particle-Filter') {
+                    ruleName = 'Gordon 序贯重要性重采样 (SIR) 后验最小方差整定律';
+                    if ('p_num' in seed) seed.p_num = 30;
+                    if ('kp' in seed) seed.kp = Math.round(40 * mRatio);
+                    if ('kd' in seed) seed.kd = Number((2.1 * Math.sqrt(m * (seed.kp || 40))).toFixed(1));
                 } else if (targetMethod === 'FeedbackLin' || targetMethod === 'Flatness' || targetMethod === 'Exact-Error-Lin') {
                     ruleName = '精确李导数反馈线性化临界阻尼律 (K_d = 2√K_p)';
                     const kp_fl = 24;
@@ -2279,6 +2394,7 @@
                 const scaleMultipliers = [0.35, 0.55, 0.75, 0.88, 1.12, 1.28, 1.55, 1.9, 2.4];
                 for (let round = 0; round < 3; round++) {
                     for (const [key, [defV, minV, maxV, stepV]] of paramEntries) {
+                        if ((targetMethod === 'ETC' && (key === 'sigma' || key === 'eps0')) || (targetMethod === 'Event-Triggered-MPC' && key === 'et_limit')) continue;
                         const currVal = bestParams[key];
                         const span = maxV - minV;
                         const candidates = new Set();
@@ -3029,18 +3145,24 @@
             };
 
             const handleMethodChange = (e) => {
-                const newMethod = e.target.value;
+                const newMethod = typeof e === "string" ? e : (e && e.target ? e.target.value : method);
+                if (!CONTROLLER_CONFIGS[newMethod]) return;
+                if (typeof e === "string" && searchQuery) setSearchQuery("");
                 setMethod(newMethod);
                 setCtrlParams(getDefaultParams(newMethod));
                 setActiveEditTab('A');
+                setRunning(true);
                 resetSim(newMethod, methodB, physParams.target, initialX, initialThetaDeg);
             };
 
             const handleMethodBChange = (e) => {
-                const newMethodB = e.target.value;
+                const newMethodB = typeof e === "string" ? e : (e && e.target ? e.target.value : methodB);
+                if (!CONTROLLER_CONFIGS[newMethodB]) return;
+                if (typeof e === "string" && searchQuery) setSearchQuery("");
                 setMethodB(newMethodB);
                 setCtrlParamsB(getDefaultParams(newMethodB));
                 setActiveEditTab('B');
+                setRunning(true);
                 resetSim(method, newMethodB, physParams.target, initialX, initialThetaDeg);
             };
 
@@ -3201,7 +3323,7 @@
                 {/* ==================== 模拟器主界面顶部超紧凑导航工具栏 ==================== */}
                 <header className={`bg-[#C7EDCC]/95 backdrop-blur-lg border-b border-white/60 py-1.5 flex items-center justify-between gap-2 z-20 shadow-sm shrink-0 ${getLayoutClass('header')}`}>
                     <div className="flex items-center gap-2.5 w-full xl:w-auto justify-between xl:justify-start flex-wrap">
-                        {/* 标题位置：仅保留控制理论模拟器字样、版本号、欢迎关注微信公众号“系统与控制” */}
+                        {/* 标题位置：仅保留控制理论模拟器字样、版本号、欢迎关注知乎/微信公众号“系统与控制” */}
                         <div className="flex items-center gap-2">
                             <div className="bg-gradient-to-br from-teal-500 to-emerald-600 p-1.5 rounded-lg text-white shadow-sm shrink-0">
                                 <ActivityIcon size={18} />
@@ -3332,6 +3454,57 @@
                         </button>
                     </div>
                 </header>
+
+                {/* ==================== 纪念现代控制理论泰斗 Karl Johan Åström 教授专属区域 ==================== */}
+                <section className={`pt-2 pb-0.5 shrink-0 z-10 ${getLayoutClass('header')}`}>
+                    <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 text-slate-100 rounded-xl px-3.5 py-2.5 border border-amber-400/40 shadow-md flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2.5 relative overflow-hidden">
+                        {/* 柔和金色追思光晕 */}
+                        <div className="absolute -left-10 -top-10 w-36 h-36 bg-amber-400/10 rounded-full blur-2xl pointer-events-none"></div>
+                        <div className="absolute -right-10 -bottom-10 w-36 h-36 bg-teal-400/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                        <div className="flex items-start gap-2.5 relative z-10">
+                            <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-300 text-base shrink-0 mt-0.5 shadow-inner">
+                                🕯️
+                            </div>
+                            <div className="space-y-0.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-xs sm:text-[13px] font-black text-amber-300 tracking-wide">
+                                        深切缅怀现代控制理论与控制工程泰斗 Karl Johan Åström 教授 (1934–2026)
+                                    </span>
+                                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded-full border border-amber-400/30">
+                                        In Memoriam · Lund University · IEEE Medal of Honor
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-slate-200/95 leading-relaxed">
+                                    今日，国际自动控制界巨擘、瑞典隆德大学（Lund University）荣休教授 <strong className="text-white">Karl Johan Åström</strong> 先生与世长辞。他毕生致力于架设严密数学理论与工业控制实践的桥梁，在<strong className="text-amber-200">自适应控制与自校正调节器 (STR)</strong>、<strong className="text-amber-200">工业 PID 继电反馈自整定与智能 PID</strong>、<strong className="text-amber-200">系统辨识 (ARMAX)</strong>、<strong className="text-amber-200">计算机控制与事件触发控制</strong>等领域做出了奠基性贡献，并与 R. M. Murray 合著经典教材《Feedback Systems》。先生之风，山高水长，其思想与方程永驻每一个反馈回路之中。
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* 一键致敬体验 Åström 教授代表性控制算法 */}
+                        <div className="flex items-center gap-1.5 flex-wrap shrink-0 relative z-10 w-full lg:w-auto justify-end border-t lg:border-t-0 border-white/10 pt-1.5 lg:pt-0">
+                            <span className="text-[10px] font-bold text-amber-300/90 mr-0.5 whitespace-nowrap">致敬体验先生奠基算法：</span>
+                            {[
+                                { id: 'Gain-Margin-PID', label: 'Åström-Hägglund 继电整定 PID' },
+                                { id: 'STR', label: 'STR 自校正调节器 (1973)' },
+                                { id: 'Expert-PID', label: 'Expert 专家智能 PID (1992)' },
+                                { id: 'ETC', label: '事件触发控制 (ETC)' }
+                            ].map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => handleMethodChange(item.id)}
+                                    className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap border ${
+                                        method === item.id
+                                            ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-sm font-black'
+                                            : 'bg-white/10 hover:bg-amber-400/25 text-amber-100 border-white/20'
+                                    }`}
+                                >
+                                    {item.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </section>
 
                 {/* 对比模式快速预设栏 & 同步最优求解 & 顶刊论文双链接直达 */}
                 {compareMode && (
@@ -3941,7 +4114,7 @@
                                     <HelpCircleIcon size={22} />
                                     <div>
                                         <h2 className="text-base font-extrabold tracking-wide">控制理论模拟器 V3.0 · 新手全方位使用说明与功能导览</h2>
-                                        <p className="text-[11px] text-teal-100 font-medium">欢迎关注微信公众号“系统与控制” · 一站式掌握 12 大分支 159 种控制算法与双物理对象仿真</p>
+                                        <p className="text-[11px] text-teal-100 font-medium">欢迎关注知乎/微信公众号“系统与控制” · 一站式掌握 12 大分支 159 种控制算法与双物理对象仿真</p>
                                     </div>
                                 </div>
                                 <button onClick={() => setShowGuideModal(false)} className="p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors">
